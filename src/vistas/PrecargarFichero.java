@@ -1,77 +1,122 @@
 package vistas;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import vistas.GF;
+import java.io.File;
+
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
 import javax.swing.border.EmptyBorder;
+import javax.swing.table.DefaultTableModel;
 
-public class PrecargarFichero extends JFrame implements ActionListener{
+public class PrecargarFichero extends JFrame implements ActionListener {
 
-	private static final long serialVersionUID = 1L;
-	private JPanel contentPane;
-	private JButton btnPF;
-	private JLabel lblStatus;
-	private JButton btnV;
-	/**
-	 * Launch the application.
-	 */
-	public static void main(String[] args) {
-		EventQueue.invokeLater(new Runnable() {
-			public void run() {
-				try {
-					PrecargarFichero frame = new PrecargarFichero();
-					frame.setVisible(true);
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
-		});
-	}
+    private static final long serialVersionUID = 1L;
+    private JPanel contentPane;
+    private JButton btnPF;
+    private JButton btnV;
+    private JLabel lblStatus;
 
-	/**
-	 * Create the frame.
-	 */
-	public PrecargarFichero() {
-		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setBounds(100, 100, 450, 300);
-		contentPane = new JPanel();
-		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
+    public static void main(String[] args) {
+        EventQueue.invokeLater(() -> {
+            try {
+                PrecargarFichero frame = new PrecargarFichero();
+                frame.setVisible(true);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
+    }
 
-		setContentPane(contentPane);
-		
-		contentPane.setLayout(null);
-		
-		btnPF = new JButton ("precargar fichero");
-		btnPF.setBounds(141, 128, 135, 33);
-		btnPF.addActionListener (this);
-		contentPane.add(btnPF);
-		
-		lblStatus = new JLabel("TEXTO PRUEVA");
-		lblStatus.setBounds(178, 206, 46, 14);
-		contentPane.add(lblStatus);
-		
-		btnV = new JButton("Visualizar");
-		btnV.setBounds(157, 86, 89, 23);
-		contentPane.add(btnV);
-	}
-	
-		
-		
-		
-	
-		@Override
-		public void actionPerformed(ActionEvent evento) {
-			
-			if (evento.getSource() == btnPF); 
-				
-			if (evento.getSource() == btnV);
-				
-		}
-	}
+    public PrecargarFichero() {
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setBounds(100, 100, 450, 300);
+
+        contentPane = new JPanel();
+        contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
+        contentPane.setLayout(null);
+        setContentPane(contentPane);
+
+        btnPF = new JButton("Precargar fichero");
+        btnPF.setBounds(141, 128, 150, 33);
+        btnPF.addActionListener(this);
+        contentPane.add(btnPF);
+
+        btnV = new JButton("Visualizar");
+        btnV.setBounds(157, 86, 120, 23);
+        btnV.addActionListener(this); // ← FALTABA ESTO
+        contentPane.add(btnV);
+
+        lblStatus = new JLabel("TEXTO PRUEBA");
+        lblStatus.setBounds(150, 200, 200, 20);
+        contentPane.add(lblStatus);
+    }
+
+    public class VentanaTabla extends JFrame {
+    	/**
+		 * 
+		 */
+		private static final long serialVersionUID = 1L;
+
+		public VentanaTabla(DefaultTableModel modelo) { 
+    		setTitle("Eventos en tabla"); 
+    		setSize(600, 400); 
+    		setLocationRelativeTo(null);
+    		JTable tabla = new JTable(modelo); 
+    		JScrollPane scroll = new JScrollPane(tabla);
+    		add(scroll); 
+    		} 
+    	}
+    @Override
+    public void actionPerformed(ActionEvent evento) {
+
+    	if (evento.getSource() == btnPF) {
+
+    	    boolean ok = GF.precargar();
+
+    	    if (ok) {
+    	        JOptionPane.showMessageDialog(
+    	            this,
+    	            "El fichero se ha precargado correctamente.",
+    	            "Éxito",
+    	            JOptionPane.INFORMATION_MESSAGE
+    	        );
+    	    } else {
+    	        JOptionPane.showMessageDialog(
+    	            this,
+    	            "No se ha podido precargar el fichero.",
+    	            "Error",
+    	            JOptionPane.ERROR_MESSAGE
+    	        );
+    	    }
+    	}
+
+
+    	if (evento.getSource() == btnV) {
+
+    	    File fichero = new File("gure.dat");
+
+    	    if (!fichero.exists() || fichero.length() == 0) {
+    	        JOptionPane.showMessageDialog(
+    	            this,
+    	            "No hay datos que visualizar.",
+    	            "Aviso",
+    	            JOptionPane.WARNING_MESSAGE
+    	        );
+    	        return;
+    	    }
+
+    	    // Si hay datos → abrir tabla
+    	    DefaultTableModel modelo = GF.visualizarTabla();
+    	    new VentanaTabla(modelo).setVisible(true);
+    	}
+
+
+    }
+}

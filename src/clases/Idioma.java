@@ -1,6 +1,7 @@
 package clases;
 
 public enum Idioma {
-	INGLES,
-	ESPAÑOL
+    EUSKERA,
+    CASTELLANO,
+    INGLES
 }

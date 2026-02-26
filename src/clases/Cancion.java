@@ -3,50 +3,35 @@ package clases;
 import java.io.Serializable;
 
 public class Cancion implements Serializable {
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 1L;
-	public String nombreCancion;
-	public String interprete;
 
-	public Cancion(String nombreCancion, String nombreGrupo, String interprete) {
-		this.nombreCancion = nombreCancion;
-		this.interprete = interprete;
-	}
+    private static final long serialVersionUID = 1L;
 
-	/**
-	 * @return the nombreCancion
-	 */
-	public String getNombreCancion() {
-		return nombreCancion;
-	}
+    private String titulo;
+    private int duracion; // en minutos
 
-	/**
-	 * @param nombreCancion the nombreCancion to set
-	 */
-	public void setNombreCancion(String nombreCancion) {
-		this.nombreCancion = nombreCancion;
-	}
+    public Cancion(String titulo, int duracion) {
+        this.titulo = titulo;
+        this.duracion = duracion;
+    }
 
-	/**
-	 * @return the nombreGrupo
-	 */
-	public String getNombreGrupo() {
-		return interprete;
-	}
+    public String getTitulo() {
+        return titulo;
+    }
 
-	/**
-	 * @param nombreGrupo the nombreGrupo to set
-	 */
-	public void setNombreGrupo(String nombreGrupo) {
-		this.interprete = nombreGrupo;
-	}
+    public void setTitulo(String titulo) {
+        this.titulo = titulo;
+    }
 
-	@Override
-	public String toString() {
-		return "Cancion [nombreCancion=" + nombreCancion + ", nombreGrupo=" + interprete + ", getNombreCancion()="
-				+ getNombreCancion() + ", getNombreGrupo()=" + getNombreGrupo() + ", getClass()=" + getClass()
-				+ ", hashCode()=" + hashCode() + ", toString()=" + super.toString() + "]";
-	}
+    public int getDuracion() {
+        return duracion;
+    }
+
+    public void setDuracion(int duracion) {
+        this.duracion = duracion;
+    }
+
+    @Override
+    public String toString() {
+        return "Canción: " + titulo + " (" + duracion + " min)";
+    }
 }

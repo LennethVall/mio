@@ -8,308 +8,414 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.time.LocalDate;
-import java.util.Iterator;
 import java.util.TreeMap;
 
+import clases.Cancion;
 import clases.Concierto;
-
 import clases.Evento;
 import clases.Idioma;
-
 import clases.SinCabeceraObjectOutputStream;
 import clases.Teatro;
-
 import clases.Utilidades;
 
 public class Main {
 
-	public static void main(String[] args) {
+    private static final File FICH_EVENTO = new File("gure.dat");
+    private static final File FICH_ESTADISTICAS = new File("estadisticas.dat");
 
-		File fichEvento = new File("evento.dat");
-		File fichEstadistica = new File("estadisticas.dat");
+    public static void main(String[] args) {
 
-		int opcion;
+        int opcion;
 
-		do {
-			mostrarMenu();
-			opcion = Utilidades.leerInt("Elige opción: ");
+        do {
+            mostrarMenu();
+            opcion = Utilidades.leerInt("Elige opción (0-5): ", 0, 5);
 
-			try {
-				switch (opcion) {
-				case 1:
-					nuevoEvento(fichEvento);
-					break;
-				case 2:
-					visualizar();
-					break;
-				case 3:
-					añadirCancionAConcierto();
-					break;
-				case 4:
-					eliminarEventoPorNombre(fichEvento);
-					break;
-				case 5:
-					mostrar(fichEvento);
-					break;
-				case 0:
-					System.out.println("Saliendo del programa...");
-					break;
-				default:
-					System.out.println("Opción no válida");
-				}
-			} catch (Exception e) {
-				System.out.println("ERROR: " + e.getMessage());
-			}
+            switch (opcion) {
+                case 1:
+                    nuevoEvento(FICH_EVENTO);
+                    break;
+                case 2:
+                    visualizarEventos(FICH_EVENTO);
+                    break;
+                case 3:
+                    anadirCancion(FICH_EVENTO);
+                    break;
+                case 4:
+                    eliminarEventoPorNombre(FICH_EVENTO);
+                    break;
+                case 5:
+                    generarEstadisticas(FICH_EVENTO);
+                    break;
+                case 0:
+                    System.out.println("Saliendo del programa...");
+                    break;
+                default:
+                    System.out.println("Opción no válida");
+            }
 
-		} while (opcion != 0);
-	}
+        } while (opcion != 0);
+    }
 
-	private static void mostrarMenu() {
-		System.out.println("\n--- MENÚ ---");
-		System.out.println("1. Insertar nuevo evento");
-		System.out.println("2. Visualizar eventos");
-		System.out.println("3. Añadir cancion a un concierto");
-		System.out.println("4. Eliminae un evento dado su nombre");
-		System.out.println("5. Mostrar");
-		System.out.println("0. Salir");
-	}
+    private static void mostrarMenu() {
+        System.out.println("\n--- MENÚ ---");
+        System.out.println("1. Insertar nuevo evento");
+        System.out.println("2. Visualizar eventos");
+        System.out.println("3. Añadir canción a un concierto");
+        System.out.println("4. Eliminar un evento dado su nombre");
+        System.out.println("5. Mostrar estadísticas por idioma");
+        System.out.println("0. Salir");
+    }
 
-	private static TreeMap<String, Evento> cargarEvento(File fichEvento) {
-		TreeMap<String, Evento> canciones = new TreeMap<>();
+    // 1) Insertar nuevo evento (SIN estructuras de datos)
+    private static void nuevoEvento(File fichEvento) {
 
-		if (!fichEvento.exists() || fichEvento.length() == 0) {
-			return canciones;
-		}
+        System.out.println("Introduce el nombre del evento:");
+        String nombreEvento = Utilidades.introducirCadena();
 
-		try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(fichEvento))) {
-			while (true) {
-				try {
-					Evento e = (Evento) ois.readObject();
-					canciones.put(e.getNombre(), e);
-				} catch (EOFException eof) {
-					break;
-				}
-			}
-		} catch (Exception e) {
-			System.out.println("Error leyendo archivo: " + e.getMessage());
-			return new TreeMap<>();
-		}
+        // 1) Comprobar si el nombre ya existe (SIN estructuras de datos)
+        boolean existe = false;
 
-		return canciones;
-	}
+        if (fichEvento.exists() && fichEvento.length() > 0) {
+            try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(fichEvento))) {
+                while (true) {
+                    try {
+                        Evento e = (Evento) ois.readObject();
+                        if (e.getNombre().equalsIgnoreCase(nombreEvento)) {
+                            existe = true;
+                            break;
+                        }
+                    } catch (EOFException eof) {
+                        break;
+                    }
+                }
+            } catch (Exception e) {
+                System.out.println("Error leyendo fichero: " + e.getMessage());
+                return;
+            }
+        }
 
-	public static void nuevoEvento(File fichEvento) {
+        if (existe) {
+            System.out.println("Ya existe un evento con ese nombre.");
+            return;
+        }
 
-		System.out.println("Introduce nombre del evento:");
-		String nombre = Utilidades.introducirCadena();
+        // 2) Generar ID secuencial (SIN estructuras de datos)
+        int nuevoId = 1;
 
-		if (fichEvento.exists() && fichEvento.length() > 0) {
-			try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(fichEvento))) {
-				while (true) {
-					try {
-						Evento e = (Evento) ois.readObject();
-						if (e.getNombre().equals(nombre)) {
-							System.out.println("Ya existe un motor con ese ID.");
-							return;
-						}
-					} catch (EOFException eof) {
-						break;
-					}
-				}
-			} catch (Exception e) {
-				System.out.println("Error leyendo motores: " + e.getMessage());
-				return;
-			}
-		}
+        if (fichEvento.exists() && fichEvento.length() > 0) {
+            try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(fichEvento))) {
+                while (true) {
+                    try {
+                        Evento e = (Evento) ois.readObject();
+                        if (e.getId() >= nuevoId) {
+                            nuevoId = e.getId() + 1;
+                        }
+                    } catch (EOFException eof) {
+                        break;
+                    }
+                }
+            } catch (Exception e) {
+                System.out.println("Error generando ID: " + e.getMessage());
+                return;
+            }
+        }
 
-		System.out.println("Introduce id:");
-		int id = Utilidades.leerInt();
+        // 3) Pedir tipo de evento
+        System.out.println("Tipo de evento:");
+        System.out.println("1. Concierto");
+        System.out.println("2. Teatro");
+        int tipo = Utilidades.leerInt(1, 2);
 
-		System.out.println("Tipo de evento:");
-		System.out.println("1. Concierto");
-		System.out.println("2. Teatro");
-		int tipo = Utilidades.leerInt();
+        // 4) Pedir fecha
+        System.out.println("Introduce la fecha del evento (dd/MM/yyyy):");
+        LocalDate fecha = Utilidades.leerFechaDMA();
 
-		Evento nuevo = null;
+        if (fecha.isBefore(LocalDate.now())) {
+            System.out.println("ERROR: La fecha no puede ser anterior a hoy.");
+            return;
+        }
 
-		if (tipo == 1) {
-			System.out.println("Introduce nombre del grupo");
-			int nombreGrupo = Utilidades.leerInt();
+        // 5) Pedir aforo
+        System.out.println("Introduce aforo:");
+        int aforo = Utilidades.leerInt(1, 100000);
 
-			System.out.println("Introduce la fecha del evento (aaaa-mm-dd):");
-			String fecha = Utilidades.introducirCadena();
+        // 6) Pedir idioma
+        System.out.println("Idioma (EUSKERA / CASTELLANO / INGLES):");
+        String idiomaStr = Utilidades.introducirCadena("EUSKERA", "CASTELLANO", "INGLES");
+        Idioma idioma = Idioma.valueOf(idiomaStr.toUpperCase());
 
-			LocalDate fechaReparacion;
-			try {
-				fechaReparacion = LocalDate.parse(fecha);
-			} catch (Exception e) {
-				System.out.println("Fecha no válida.");
-				return;
-			}
+        Evento nuevo = null;
 
-			System.out.println("Introduce aforo");
-			int aforo = Utilidades.leerInt();
+        // 7) Crear el evento según tipo
+        if (tipo == 1) {
+            System.out.println("Introduce nombre del grupo:");
+            String nombreGrupo = Utilidades.introducirCadena();
 
-			System.out.println("Idioma (INGLES / ESPAÑOL):");
-			String combStr = Utilidades.introducirCadena().toUpperCase();
-			Idioma idm;
+            nuevo = new Concierto(nuevoId, nombreEvento, fecha, aforo, idioma, nombreGrupo);
 
-			if (combStr.equals("INGLES")) {
-				idm = Idioma.INGLES;
-			} else if (combStr.equals("ESPAÑOL")) {
-				idm = Idioma.ESPAÑOL;
-			} else {
-				System.out.println("Idioma no válido.");
-				return;
-			}
+        } else {
+            System.out.println("Introduce número de actos:");
+            int actos = Utilidades.leerInt(1, 50);
 
-			nuevo = new Concierto(id, nombreGrupo, fecha, aforo, idm);
+            nuevo = new Teatro(nuevoId, nombreEvento, fecha, aforo, actos, idioma);
+        }
 
-		
-		}
-		// no me coge la opcion de tipo 2 con nada
-		}else if (tipo == 2) {
+        // 8) Escribir en fichero (append)
+   
+        try {
+            ObjectOutputStream oos;
 
-		
-			Evento nuevo = null;System.out.println("Introduce id:");
-			int id = Utilidades.leerInt();System.out.println("Introduce el numero de actos");
-			int actos = Utilidades.leerInt();
+            if (fichEvento.exists() && fichEvento.length() > 0) {
+                oos = new SinCabeceraObjectOutputStream(new FileOutputStream(fichEvento, true));
+            } else {
+                oos = new ObjectOutputStream(new FileOutputStream(fichEvento));
+            }
 
-			System.out.println("Introduce la fecha del evento (aaaa-mm-dd):");
-			String fecha = Utilidades.introducirCadena();
+            oos.writeObject(nuevo);
+            oos.close();
 
-			LocalDate fechaReparacion;
-			try
-			{
-				fechaReparacion = LocalDate.parse(fecha);
-				}catch(Exception e)	{
-					
-					System.out.println("Fecha no válida.");
-					return;
-				}
+        } catch (IOException e) {
+            System.out.println("Error escribiendo evento: " + e.getMessage());
+            return;
+        }
 
-			System.out.println("Introduce aforo");
-			int aforo = Utilidades.leerInt();
+        System.out.println("Evento añadido correctamente.");
 
-			System.out.println("Idioma (INGLES / ESPAÑOL):");
-			String combStr = Utilidades.introducirCadena().toUpperCase();
-			Idioma idm;
+    }
 
-				if(combStr.equals("INGLES"))
-				{
-					idm = Idioma.INGLES;
-				}else if(combStr.equals("ESPAÑOL"))	{
-					idm = Idioma.ESPAÑOL;
-				}else{
-					System.out.println("Idioma no válido.");
-					return;
-				}
+    // 2) Visualizar eventos (SIN estructuras de datos)
+    private static void visualizarEventos(File fichEvento) {
 
-			 nuevo = new Teatro(id,actos,fecha,aforo,idm);
+        // 1) Comprobar si el fichero existe o está vacío
+        if (!fichEvento.exists() || fichEvento.length() == 0) {
+            System.out.println("No hay eventos para mostrar.");
+            return;
+        }
 
-		}else{
-			System.out.println("Opción no válida.");
-			return;
-			}
-	
-// intento escribir añadiendo debajo en el fichero, me pide crear el fichero o la constante fichEvento
-	try(
-	SinCabeceraObjectOutputStream oos = new SinCabeceraObjectOutputStream(new FileOutputStream(fichEvento, true)))
-	{
-		//creo el nuevo teatro antes de escribir el objeto
-	
-	oos.writeObject(nuevo);
+        System.out.println("\n--- LISTADO DE EVENTOS ---");
 
-		}catch(IOException e)
-		{
-		System.out.println("Error escribiendo evento: " + e.getMessage());
-		return;
-		}
+        // 2) Lectura secuencial SIN estructuras de datos
+        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(fichEvento))) {
 
-	System.out.println("Evento añadido correctamente.");
+            while (true) {
+                try {
+                    Evento e = (Evento) ois.readObject();
 
-	public static void visualizar() {
-	    	// no he sabido hacerlo
-	    }
+                    // 3) Mostrar cada evento usando su método visualizar()
+                    e.visualizar();
+                    System.out.println("-----------------------------");
 
-	public static void añadirCancionAConcierto() {
-	    	//no he sabido hacerlo
-	    }
-		// no comprendo por que me da error en el int de la declaracion del metodo 
-	public static int eliminarEventoPorNombre(File fichEvento) {
-	    	TreeMap<String, Evento> mapaEvento = cargarEvento(fichEvento);
-			
+                } catch (EOFException eof) {
+                    // Fin del fichero → salir del bucle
+                    break;
+                }
+            }
 
-			if (mapaEvento.isEmpty()) {
-				System.out.println("No hay motores.");
-				return -1;
-			}
+        } catch (Exception e) {
+            System.out.println("Error leyendo eventos: " + e.getMessage());
+        }
+    }
 
-			System.out.println("Introduce el nombre del evento a borrar:");
-			String nombreBuscado = Utilidades.introducirCadena();
+    
 
-			boolean encontrado = false;
-			String nombreEventoEliminado = null;
+    // 3) Añadir canción a un concierto (SIN estructuras de datos)
+    private static void anadirCancion(File fichEvento) {
 
-			Iterator<Evento> itMotores = mapaEvento.values().iterator();
-			while (itMotores.hasNext()) {
-				Evento e = itMotores.next();
-				if (e.getNombre().equalsIgnoreCase(nombreBuscado)) {
-					nombreEventoEliminado = e.getNombre();
-					itMotores.remove();
-					encontrado = true;
-					break;
-				}
-			}
+        if (!fichEvento.exists() || fichEvento.length() == 0) {
+            System.out.println("No hay eventos registrados.");
+            return;
+        }
 
-			if (!encontrado) {
-				System.out.println("Marca no encontrada.");
-				return -1;
-			}
+        System.out.println("Introduce el nombre del concierto:");
+        String nombreBuscado = Utilidades.introducirCadena();
 
-			
+        File temp = new File("temp.dat");
+        boolean encontrado = false;
 
-			if (!guardarEvento(fichEvento, mapaEvento)) {
-				return -1;
-			}
-			
+        try (
+            ObjectInputStream ois = new ObjectInputStream(new FileInputStream(fichEvento));
+            ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(temp))
+        ) {
 
-			System.out.println("Evento eliminado.");
-			return 1;
-		}
-	// no comprendo por qu eme da error en el boolean de la declaracion del metodo
-	private static boolean guardarEvento(File fichEvento, TreeMap<String, Evento> mapaEvento) {
-			File aux = new File("Evento_aux.dat");
+            while (true) {
+                try {
+                    Evento e = (Evento) ois.readObject();
 
-			try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(aux))) {
-				for (Evento e : mapaEvento.values()) {
-					oos.writeObject(e);
-				}
-			} catch (Exception e) {
-				System.out.println("Error guardando reparaciones: " + e.getMessage());
-				return false;
-			}
+                    // ¿Es el concierto buscado?
+                    if (e instanceof Concierto && e.getNombre().equalsIgnoreCase(nombreBuscado)) {
+                        encontrado = true;
 
-			if (fichEvento.exists()) {
-				fichEvento.delete();
-			}
-			aux.renameTo(fichEvento);
-			return true;
-		}
-	//no comprendo por que da error en void de la declaracion del metodo
-	public static void mostrar(File fichEvento) {
+                        // Pedir datos de la canción
+                        System.out.println("Título de la canción:");
+                        String titulo = Utilidades.introducirCadena();
 
-	    		TreeMap<String, Evento> mapaEvento = cargarEvento(fichEvento);
+                        System.out.println("Duración en minutos:");
+                        int duracion = Utilidades.leerInt(1, 1000);
 
-	    		if (mapaEvento.isEmpty()) {
-	    			System.out.println("No hay eventos que mostrar.");
-	    			return;
-	    		}
+                        // Añadir canción
+                        Concierto c = (Concierto) e;
+                        c.addCancion(new Cancion(titulo, duracion));
 
-	    		for (Evento e : mapaEvento.values()) {
-	    			System.out.println(e);
-	    			System.out.println("idioma " + e.getIdioma());
-	    			System.out.println("-------------------------");
-	    		}
-	    	}
-}}
+                        // Guardar el concierto modificado
+                        oos.writeObject(c);
+
+                    } else {
+                        // Guardar el evento tal cual
+                        oos.writeObject(e);
+                    }
+
+                } catch (EOFException eof) {
+                    break;
+                }
+            }
+
+        } catch (Exception ex) {
+            System.out.println("Error modificando el fichero: " + ex.getMessage());
+            return;
+        }
+
+        // Si no se encontró el concierto
+        if (!encontrado) {
+            System.out.println("El concierto no existe.");
+            temp.delete();
+            return;
+        }
+
+        // Reemplazar el fichero original
+        fichEvento.delete();
+        temp.renameTo(fichEvento);
+
+        System.out.println("Canción añadida correctamente.");
+    }
+
+
+    // 4) Eliminar evento por nombre (CON estructuras de datos)
+    private static void eliminarEventoPorNombre(File fichEvento) {
+
+        if (!fichEvento.exists() || fichEvento.length() == 0) {
+            System.out.println("No hay eventos registrados.");
+            return;
+        }
+
+        System.out.println("Introduce el nombre del evento a eliminar:");
+        String nombreBuscado = Utilidades.introducirCadena();
+
+        TreeMap<String, Evento> mapa = new TreeMap<>();
+        boolean encontrado = false;
+
+        // 1) Cargar todos los eventos en el TreeMap
+        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(fichEvento))) {
+
+            while (true) {
+                try {
+                    Evento e = (Evento) ois.readObject();
+                    mapa.put(e.getNombre().toLowerCase(), e);
+                } catch (EOFException eof) {
+                    break;
+                }
+            }
+
+        } catch (Exception e) {
+            System.out.println("Error leyendo el fichero: " + e.getMessage());
+            return;
+        }
+
+        // 2) Intentar eliminar
+        if (mapa.remove(nombreBuscado.toLowerCase()) != null) {
+            encontrado = true;
+        }
+
+        if (!encontrado) {
+            System.out.println("El evento no existe.");
+            return;
+        }
+
+        // 3) Guardar el TreeMap actualizado en un fichero temporal
+        File temp = new File("temp.dat");
+
+        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(temp))) {
+
+            for (Evento e : mapa.values()) {
+                oos.writeObject(e);
+            }
+
+        } catch (Exception e) {
+            System.out.println("Error escribiendo el fichero: " + e.getMessage());
+            return;
+        }
+
+        // 4) Reemplazar el fichero original
+        fichEvento.delete();
+        temp.renameTo(fichEvento);
+
+        System.out.println("Evento eliminado correctamente.");
+    }
+
+
+    // 5) Estadísticas por idioma (CON estructuras de datos)
+    private static void generarEstadisticas(File fichEvento) {
+
+        if (!fichEvento.exists() || fichEvento.length() == 0) {
+            System.out.println("No hay eventos registrados.");
+            return;
+        }
+
+        // Mapa ordenado por nombre del idioma
+        TreeMap<String, Integer> contadorIdiomas = new TreeMap<>();
+
+        // Inicializar contadores
+        contadorIdiomas.put("CASTELLANO", 0);
+        contadorIdiomas.put("EUSKERA", 0);
+        contadorIdiomas.put("INGLES", 0);
+
+        // 1) Leer todos los eventos del fichero
+        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(fichEvento))) {
+
+            while (true) {
+                try {
+                    Evento e = (Evento) ois.readObject();
+                    String idioma = e.getIdioma().toString().toUpperCase();
+
+                    // Incrementar contador
+                    contadorIdiomas.put(idioma, contadorIdiomas.get(idioma) + 1);
+
+                } catch (EOFException eof) {
+                    break;
+                }
+            }
+
+        } catch (Exception e) {
+            System.out.println("Error leyendo eventos: " + e.getMessage());
+            return;
+        }
+
+        // 2) Mostrar estadísticas por pantalla
+        System.out.println("\n--- ESTADÍSTICAS POR IDIOMA ---");
+        for (String idioma : contadorIdiomas.keySet()) {
+            System.out.println(idioma + ": " + contadorIdiomas.get(idioma));
+        }
+
+        // 3) Crear estadísticas.dat (eliminar si existe)
+        File estad = new File("estadisticas.dat");
+        if (estad.exists()) {
+            estad.delete();
+        }
+
+        // 4) Guardar estadísticas en el fichero
+        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(estad))) {
+
+            for (String idioma : contadorIdiomas.keySet()) {
+                String linea = idioma + ": " + contadorIdiomas.get(idioma);
+                oos.writeObject(linea);
+            }
+
+        } catch (Exception e) {
+            System.out.println("Error escribiendo estadísticas: " + e.getMessage());
+            return;
+        }
+
+        System.out.println("Estadísticas generadas correctamente.");
+    }
+
+}
