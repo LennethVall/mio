@@ -35,6 +35,7 @@ public class PrecargarFichero extends JFrame implements ActionListener {
     }
 
     public PrecargarFichero() {
+    	setTitle ("carga de ficheros");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setBounds(100, 100, 450, 300);
 
@@ -44,17 +45,17 @@ public class PrecargarFichero extends JFrame implements ActionListener {
         setContentPane(contentPane);
 
         btnPF = new JButton("Precargar fichero");
-        btnPF.setBounds(141, 128, 150, 33);
+        btnPF.setBounds(259, 135, 150, 33);
         btnPF.addActionListener(this);
         contentPane.add(btnPF);
 
         btnV = new JButton("Visualizar");
-        btnV.setBounds(157, 86, 120, 23);
+        btnV.setBounds(26, 137, 150, 28);
         btnV.addActionListener(this); // ← FALTABA ESTO
         contentPane.add(btnV);
 
-        lblStatus = new JLabel("TEXTO PRUEBA");
-        lblStatus.setBounds(150, 200, 200, 20);
+        lblStatus = new JLabel("Elige una opción");
+        lblStatus.setBounds(178, 185, 200, 20);
         contentPane.add(lblStatus);
     }
 
