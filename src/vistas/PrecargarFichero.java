@@ -14,6 +14,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.JTextPane;
 
 public class PrecargarFichero extends JFrame implements ActionListener {
 
@@ -21,7 +22,7 @@ public class PrecargarFichero extends JFrame implements ActionListener {
     private JPanel contentPane;
     private JButton btnPF;
     private JButton btnV;
-    private JLabel lblStatus;
+    private JButton btnSalir;
 
     public static void main(String[] args) {
         EventQueue.invokeLater(() -> {
@@ -35,7 +36,6 @@ public class PrecargarFichero extends JFrame implements ActionListener {
     }
 
     public PrecargarFichero() {
-    	setTitle ("carga de ficheros");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setBounds(100, 100, 450, 300);
 
@@ -45,18 +45,24 @@ public class PrecargarFichero extends JFrame implements ActionListener {
         setContentPane(contentPane);
 
         btnPF = new JButton("Precargar fichero");
-        btnPF.setBounds(259, 135, 150, 33);
+        btnPF.setBounds(141, 128, 150, 33);
         btnPF.addActionListener(this);
         contentPane.add(btnPF);
 
         btnV = new JButton("Visualizar");
-        btnV.setBounds(26, 137, 150, 28);
+        btnV.setBounds(157, 86, 120, 23);
         btnV.addActionListener(this); // ← FALTABA ESTO
         contentPane.add(btnV);
-
-        lblStatus = new JLabel("Elige una opción");
-        lblStatus.setBounds(178, 185, 200, 20);
-        contentPane.add(lblStatus);
+        
+        JTextPane txtpnEligeUnaOpcion = new JTextPane();
+        txtpnEligeUnaOpcion.setText("Elige una opcion");
+        txtpnEligeUnaOpcion.setBounds(74, 26, 150, 20);
+        contentPane.add(txtpnEligeUnaOpcion);
+        
+        btnSalir = new JButton("Salir");
+        btnSalir.setBounds(316, 227, 89, 23);
+        btnSalir.addActionListener(this);
+        contentPane.add(btnSalir);
     }
 
     public class VentanaTabla extends JFrame {
@@ -74,6 +80,10 @@ public class PrecargarFichero extends JFrame implements ActionListener {
     		add(scroll); 
     		} 
     	}
+    
+    private void cerrar() {
+		this.dispose();
+	}
     @Override
     public void actionPerformed(ActionEvent evento) {
 
@@ -118,6 +128,9 @@ public class PrecargarFichero extends JFrame implements ActionListener {
     	    new VentanaTabla(modelo).setVisible(true);
     	}
 
-
-    }
+    	if (evento.getSource() == btnSalir) {
+			cerrar();
+    	}
+}
+}
 }
